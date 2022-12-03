@@ -1,6 +1,7 @@
 import pandas as pd
 import tkinter as tk
 import tkinter.filedialog as fd
+from utilities import *
 import os
 
 
@@ -31,7 +32,19 @@ file_columns = {
 	"carbwel": 	{	"header": 0, 
 					"columns": ["Fabricante", "Código Fabricante", "Disponivel", "PrcVenda"],
 					"special_operation": None
-				}
+				},
+	"mte": 	{	"header": 0, 
+					"columns": ["COD MTE", "QTD. ESTOQUE", "PREÇO"],
+					"special_operation": mte_process
+				},
+	"sueyasu": 	{	"header": 0, 
+					"columns": ["NOME DO FABRICANTE", "CODIGO DA PEÇA (FABRICANTE)", "QUANTIDADE EM ESTOQUE", "PREÇO"],
+					"special_operation": sueyasu_process
+				},
+	"polipecas":{	"header": 15, 
+					"columns": ["COD. FORNECEDOR", "PREÇO"],
+					"special_operation": polipecas_process
+				},
 }
 
 
@@ -40,15 +53,19 @@ file_columns = {
 
 
 def read_file(file, supplier_code, header, special_operation):
-	if "xlsx" in file or "xls" in file:
-
+	if "xlsx" in file or "xls" in file.lower():
 		df = pd.read_excel(
 			io=Fr"{file}", 
 			header = file_columns[supplier_code]["header"], 
 			usecols= file_columns[supplier_code]["columns"]
 			)[file_columns[supplier_code]["columns"]] #To maintain parsed columns orders
 
+		if file_columns[supplier_code]["special_operation"]:
+			df = file_columns[supplier_code]["special_operation"](df)
+
 		df.columns = ["Manufacturer", "Partnumber", "Quantity", "Price"]
+		
+		df["supplier"] = supplier_code
 
 	elif "txt" in file:
 		pass
